@@ -22,7 +22,12 @@ module.exports = (_, { mode }) => {
     cache: { type: 'filesystem' },
     resolve: {
       modules: [path.resolve(__dirname, 'src'), 'node_modules'],
-      extensions: ['.ts', '.tsx', '.js', '.jsx']
+      extensions: ['.ts', '.tsx', '.js', '.jsx'],
+      alias: {
+        react: 'preact/compat',
+        'react-dom': 'preact/compat',
+        'react/jsx-runtime': 'preact/jsx-runtime'
+      }
     },
     module: {
       rules: [
