@@ -29,7 +29,7 @@ const App = () => {
   }, [pathname])
 
   return (
-    <>
+    <div>
       <Navigation />
 
       <Layout>
@@ -39,7 +39,7 @@ const App = () => {
           <Route path="/*" element={<Navigate replace to="/" />} />
         </Routes>
       </Layout>
-    </>
+    </div>
   )
 }
 
