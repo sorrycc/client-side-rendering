@@ -4,14 +4,15 @@ import { persistState, getPersistedState, useFetch } from 'frontend-essentials'
 import startCase from 'lodash/startCase'
 import toLower from 'lodash/toLower'
 import { css } from '@emotion/css'
-import { capitalize, Skeleton } from '@mui/material'
+import { Skeleton } from '@mui/material'
 
 import pagesManifest from 'pages-manifest.json'
+import { preconnect } from 'utils/preconnect'
 import { setMetaTags } from 'utils/meta-tags'
 import Title from 'components/common/Title'
 import Info from 'components/common/Info'
 
-const { title, description, data } = pagesManifest.find(({ chunk }) => chunk === 'pokemon-info')
+const { description, data } = pagesManifest.find(({ chunk }) => chunk === 'pokemon-info')
 
 const PokemonInfo = () => {
   const { name: nameParam } = useParams()
@@ -26,15 +27,22 @@ const PokemonInfo = () => {
   })
 
   useEffect(() => {
-    if (!id) return
+    preconnect(data.preconnectURL)
+  }, [])
+
+  useEffect(() => {
+    if (!name) return
 
     persistState(`${nameParam}Info`, pokemonInfo)
-    setMetaTags({ title: `${capitalize(name)} | Pokémon Info`, image: sprites.other.officialArtwork.frontDefault })
-  }, [id])
+    setMetaTags({
+      title: `${startCase(toLower(name))} | Pokémon Info`,
+      image: sprites.other.officialArtwork.frontDefault
+    })
+  }, [name])
 
   return (
     <div>
-      <Title>{title}</Title>
+      <Title backButton>Pokémon Info</Title>
 
       <Info className={style.info}>{description}</Info>
 
