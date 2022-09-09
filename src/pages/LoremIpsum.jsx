@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 import { isDate } from 'moment'
-import { persistState, getPersistedState, useFetch } from 'frontend-essentials'
+import { Meta, useFetch, persistState, getPersistedState } from 'frontend-essentials'
 import { css, cx } from '@emotion/css'
 import { Skeleton } from '@mui/material'
 
 import pagesManifest from 'pages-manifest.json'
-import { setMetaTags } from 'utils/meta-tags'
 import Title from 'components/common/Title'
 import Info from 'components/common/Info'
 
@@ -23,14 +22,18 @@ const LoremIpsum = () => {
 
   useEffect(() => {
     if (loremIpsum) persistState('loremIpsum', loremIpsum)
-
-    setMetaTags({ image: `${window.location.origin}/icons/og-lorem-ipsum.png` })
   }, [loremIpsum])
 
   console.log(isDate(new Date()))
 
   return (
     <div>
+      <Meta
+        title={`${title} | Client-side Rendering`}
+        description={description}
+        image={`${window.location.origin}/icons/og-lorem-ipsum.png`}
+      />
+
       <Title>{title}</Title>
 
       <Info className={style.info}>{description}</Info>

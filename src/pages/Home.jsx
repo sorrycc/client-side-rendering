@@ -1,16 +1,23 @@
 import { css, cx } from '@emotion/css'
+import { Meta } from 'frontend-essentials'
 import { Button, Switch, TextField, Select, MenuItem, Slider, Rating } from '@mui/material'
 
 import pagesManifest from 'pages-manifest.json'
 import Title from 'components/common/Title'
 import Info from 'components/common/Info'
 
-const { description, heading } = pagesManifest.find(({ chunk }) => chunk === 'index')
+const { title, description } = pagesManifest.find(({ chunk }) => chunk === 'index')
 
 const Home = () => {
   return (
     <div>
-      <Title>{heading}</Title>
+      <Meta
+        title="Client-side Rendering"
+        description={description}
+        image={`${window.location.origin}/icons/og-icon.png`}
+      />
+
+      <Title>{title}</Title>
 
       <Info className={style.info}>{description}</Info>
 

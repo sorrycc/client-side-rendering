@@ -1,4 +1,6 @@
-This project is a case study of CSR, it aims to explore the potential of client-side rendered apps in comparison to server-side rendering.
+<h1 align="center">Client-side Rendering</h1>
+
+This project is a case study of CSR, it aims to explore the potential of client-side rendered apps compared to server-side rendering.
 
 ### Legend
 
@@ -7,10 +9,6 @@ This project is a case study of CSR, it aims to explore the potential of client-
 **SSR**: Server-side Rendering
 <br>
 **SSG**: Static Site Generation
-<br>
-**UX**: User Experience
-<br>
-**DX**: Developer Experience
 
 ## Table of Contents
 
@@ -36,7 +34,7 @@ This project is a case study of CSR, it aims to explore the potential of client-
   - [Sitemaps](#sitemaps)
   - [Indexing](#indexing)
     - [Google](#google)
-    - [Other Search Engines](#other-search-engines)
+    - [Prerendering](#prerendering)
   - [Social Media Share Previews](#social-media-share-previews)
 - [CSR vs. SSR](#csr-vs-ssr)
   - [SSR Disadvantages](#ssr-disadvantages)
@@ -51,16 +49,16 @@ Over the last few years, server-side rendering has started to (re)gain popularit
 <br>
 While SSR has some advantages, these frameworks keep emphasizing how fast they are ("Performance as a default"), implying client-side rendering is slow.
 <br>
-In addition, it is a common misconception that great SEO can only be achieved by using SSR, and that search engines can't crawl CSR apps properly.
+In addition, it is a common misconception that great SEO can only be achieved by using SSR, and that there's nothing we can do to improve the way search engines crawl CSR apps.
 
 This project implements a basic CSR app with some tweaks such as code-splitting, with the ambition that as the app scales, the loading time of a single page would mostly remain unaffected.
 The objective is to simulate the number of packages used in a production grade app and try to decrease its loading time as much as possible, mostly by parallelizing requests.
 
-It is important to note that improving performance should not come at the expense of the developer experience, so the way this project is architected should vary only slightly compared to "normal" react projects, and it won't be as extremely opinionated as Next.js.
+It is important to note that improving performance should not come at the expense of the developer experience, so the way this project is architected should vary only slightly compared to "normal" react projects, and it won't be as extremely opinionated as Next.js (or as limiting as SSR is in general).
 
-This case study will cover two major aspects: performance and SEO. We will try to achieve high scores in both of them, compared to SSR and by themselves.
+This case study will cover two major aspects: performance and SEO. We will see how we can achieve great scores in both of them.
 
-_Note: while this project is implemented with React, the majority of it's tweaks are not tied to any framework and are purely browser-based._
+_Note: while this project is implemented with React, the majority of its tweaks are not tied to any framework and are purely browser-based._
 
 # Performance
 
@@ -648,7 +646,7 @@ export default lazyPrefetch
 + const Pokemon = lazyPrefetch(() => import(/* webpackChunkName: "pokemon" */ 'pages/Pokemon'))
 ```
 
-Now every page will be prefetched (but not executed) 200ms after the browser's _load_ event.
+Now all pages will be prefetched (but not executed) 200ms after the browser's _load_ event.
 
 ## Deploying
 
@@ -689,7 +687,6 @@ As it turns out, performance is **not** a default in Next.js.
 
 ## Areas for Improvement
 
-- Switch to _[Preact](https://preactjs.com)_ for a much smaller bundle size.
 - Compress assets using _[Brotli level 11](https://d33wubrfki0l68.cloudfront.net/3434fd222424236d1f0f5b4596de1480b5378156/1a5ec/assets/wp-content/uploads/2018/07/compression_estimator_jquery.jpg)_ (Cloudflare only uses level 4 to save on computing resources).
 - Use the paid _[Cloudflare Argo](https://blog.cloudflare.com/argo)_ service for even better response times.
 
@@ -738,7 +735,7 @@ We will also have to write additional code to preload the `remoteEntry.js` files
 
 Using this method, every time a micro-frontend is deployed, the shell has to be deployed aswell.
 <br>
-However, if we have more control over the build files in production, we could spare the shell's deployment by manually editing its `index.html` file and merging the micro-frontend's _pages_ array with the _pages_ constant.
+However, if we have more control over the build files in production, we could spare the shell's rebuild and deployment by manually editing its `index.html` file and merging the micro-frontend's `pages` array with the `pages` constant.
 
 # SEO
 
@@ -792,11 +789,9 @@ We can manually submit our sitemap to _[Google Search Console](https://search.go
 
 It is often said that Google is having trouble correctly indexing CSR (JS) apps.
 <br>
-That might have been the case in 2018, but as of 2022, Google prefectly indexes every JS app.
+That might have been the case in 2018, but as of 2022, Google can index CSR apps very well.
 <br>
 The indexed pages will have a title, description and even content, as long as we remember to dynamically set them (either manually or using something like _[react-helmet](https://www.npmjs.com/package/react-helmet)_).
-
-In other words, it won't matter if we used SSR or not in terms of Google indexing.
 
 ![Google Search Results](images/google-search-results.png)
 ![Google Lorem Ipsum Search Results](images/google-lorem-ipsum-search-results.png)
@@ -805,27 +800,35 @@ The following video explains how the new Googlebot renders JS apps:
 <br>
 https://www.youtube.com/watch?v=Ey0N1Ry0BPM
 
-### Other Search Engines
-
-Other inferior search engines such as Bing cannot render JS (despite claiming they can). So in order to have them index our app correctly, we will serve them a **prerendered** version of our pages.
+However, since Googlebot tries to save on computing power, there might be cases where it would take a snapshot of the page before it finishes loading.
 <br>
-Prerendering is the act of crawling web apps in production (using headless Chromium) and generating a complete HTML file for each page.
+So we better not rely on its ability to crawl JS apps and just serve it prerendered pages.
 
-We have two options for generating prerendered pages:
+### Prerendering
 
-1. We can use a dedicated service such as _[Prerender.io](https://prerender.io)_.
+Other search engines such as Bing cannot render JS (despite claiming they can). So in order to have them crawl our app correctly, we will serve them **prerendered** versions of our pages.
+<br>
+Prerendering is the act of crawling web apps in production (using headless Chromium) and generating a complete HTML file (with data) for each page.
+
+We have two options when it comes to prerendering:
+
+1. We can use a dedicated service such as _[prerender.io](https://prerender.io)_ and _[seo4ajax](https://www.seo4ajax.com/)_.
 
 ![Prerender.io Table](images/prerender-io-table.png)
 
-2. We can build our own prerender server using free open-source tools such as _[Rendertron](https://github.com/GoogleChrome/rendertron)_.
+2. We can deploy our own prerender server using free open-source tools such as _[Prerender](https://github.com/prerender/prerender)_ and _[Rendertron](https://github.com/GoogleChrome/rendertron)_.
 
-Then we redirect web crawlers (identified by their User-Agent header string) to our prerendered pages using Cloudflare Workers: _[public/\_worker.js](public/_worker.js)_.
+Then we redirect web crawlers (identified by their `User-Agent` header string) to our prerendered pages using Cloudflare Workers: _[public/\_worker.js](public/_worker.js)_.
 
-Prerendering, also called _Dynamic Rendering_, is encouraged by _[Google](https://developers.google.com/search/docs/advanced/javascript/dynamic-rendering)_ and _[Microsoft](https://blogs.bing.com/webmaster/october-2018/bingbot-Series-JavaScript,-Dynamic-Rendering,-and-Cloaking-Oh-My)_.
+_Prerendering_, also called _Dynamic Rendering_, is encouraged by _[Google](https://developers.google.com/search/docs/advanced/javascript/dynamic-rendering)_ and _[Microsoft](https://blogs.bing.com/webmaster/october-2018/bingbot-Series-JavaScript,-Dynamic-Rendering,-and-Cloaking-Oh-My)_.
 
 Using prerendering produces the **exact same** SEO results as using SSR in all search engines.
+<br>
+In fact, when using SSR with client-side data fetching, Googlebot might not wait for the data to arrive and just take a snapshot of the page. Other search engines will simply take the snapshot right away since they cannot render JS.
+<br>
+However, using prerendering, we can instruct our prerenderer to _[wait for the last request](https://github.com/prerender/prerender#waitafterlastrequest)_ before taking a snapshot, ensuring the page is crawled with its data.
 
-_Note that if you only care about Google indexing and you don't need share previews, there's little sense to prerendering your website, since Googlebot crawls JS apps flawlessly._
+_Note that if you are using CSS-in-JS, you should [disable the speedy optimization](src/utils/disable-speedy.ts) during prerendering in order to have your styles omitted to the DOM._
 
 ### Social Media Share Previews
 
@@ -836,27 +839,20 @@ This happens because most CSR apps have only one HTML file, and social share pre
 This is where prerendering comes to our aid once again, we only need to make sure to set the correct meta tags dynamically:
 
 ```js
-export const setMetaTags = ({ title, description, image }) => {
-  if (title) {
-    document.title = title
-    document.head.querySelector('meta[property="og:title"]').setAttribute('content', title)
-  }
-  if (description) document.head.querySelector('meta[name="description"]').setAttribute('content', description)
-
-  document.head.querySelector('meta[property="og:url"]').setAttribute('content', window.location.href)
-  document.head
-    .querySelector('meta[property="og:image"]')
-    .setAttribute('content', image || `${window.location.origin}/icons/og-icon.png`)
+const Home = props => {
+  return (
+    <Meta 
+      title="Client-side Rendering" 
+      description="This page demonstrates a large amount of components that are rendered on the screen."
+      image={`${window.location.origin}/icons/og-icon.png`}
+    />
+    .
+    .
+    .
+  )
 }
 ```
-
-```js
-useEffect(() => {
-  const page = pagesManifest.find(({ path }) => pathname === path || isStructureEqual(pathname, path)) || {}
-
-  setMetaTags(page)
-}, [pathname])
-```
+The `Meta` component can be found [here](src/components/common/Meta.ts).
 
 This, after going through prerendering, gives us the correct preview for every page:
 
@@ -873,6 +869,7 @@ This, after going through prerendering, gives us the correct preview for every p
 Here's a list of some SSR cons that should not be taken lightly:
 
 - When moving to client-side data fetching, SSR will **always** be slower than CSR, since its document is always bigger and takes longer to download.
+- SSR apps are always heavier than CSR apps, since every page is composed of both a fully-constructed HTML document and its scripts (used for hydration).
 - Since all images are initially included in the document, scripts and images will compete for bandwidth, causing delayed interactivity on slow networks.
 - Since accessing browser-related objects during the server render phase throws an error, some very helpful tools become unusable, while others (such as _[react-media](https://www.npmjs.com/package/react-media#server-side-rendering-ssr)_) require SSR-specific customizations.
 - SSR page responses mostly don't return a _[304 Not Modified](https://blog.hubspot.com/marketing/http-304-not-modified#:~:text=An%20HTTP%20304%20not%20modified%20status%20code%20means%20that%20the,to%20speed%20up%20page%20delivery)_ status.
@@ -887,25 +884,25 @@ We can even see that Next.js's own documentation _[push you away](https://nextjs
 <br>
 And by doing so, we will fall short behind a CSR app's performance (as mentioned above).
 
-That's why choosing SSR for its "server-side data fetching" ability is a mistake - you may never know how much of the data fetching will end up in the client because of poor server performance.
+That's why choosing SSR for its "server-side data fetching" ability is a mistake - you may never know how much of the data fetching will end up in the client because of poor server performance (or inevitably large queries).
 
 A quick reminder that since we preload the data in our CSR app, we benefit in both first painting and data arrival.
 
 ## Inlining CSS
 
-When we talk about SSR render flow, we paint the following picture in our minds:
+When we talk about SSR's render flow, we paint the following picture in our minds:
 
-Browser request ---> initial HTML arrives (_page is visible_) ---> JS arrives (_page is interactive_).
+_**Browser request** ===> **initial HTML arrives (page is visible)** ===> **JS arrives (page is interactive)**_.
 
-But in reality, most SSR websites **do not inline critical CSS**.
+But in reality, **most SSR websites do not inline critical CSS**.
 <br>
-So the real flow becomes:
+So the actual render flow is as follows:
 
-Broswer request ---> initial HTML arrives ---> CSS arrives (_page is visible_) ---> JS arrives (_page is interactive_).
+_**Broswer request** ===> **initial HTML arrives** ===> **CSS arrives (page is visible)** ===> **JS arrives (page is interactive)**_.
 
-This makes the SSR flow **nearly identical** to the CSR flow, the only difference is that the CSR will have to wait for the JS to finish loading aswell, in order to paint the screen.
+This makes the SSR flow **nearly identical** to the CSR flow, the only difference is that in CSR the browser will have to wait for the JS to finish loading aswell, in order to paint the screen.
 <br>
-That's why the _[FCP](https://web.dev/fcp)_ differences between the two are marginal and even **don't exist** (especially under fast internet connections).
+That's why the _[FCP](https://web.dev/fcp)_ differences between the two are marginal and sometimes even **nonexistent** (especially under fast internet connections).
 
 We have both _[Next.js](https://nextjs.org)_ and _[Remix](https://remix.run)_ websites to demonstrate the absence of critical CSS inlining.
 
@@ -917,22 +914,19 @@ We have seen the advantages of static files: they are cacheable; a _304 Not Modi
 
 This may lead us to believe that SSG combines both CSR and SSR advantages: we can make our app visually appear very fast (_[FCP](https://web.dev/fcp)_) and it will even be interactive very quickly.
 
-However, in reality, SSG has some severe limitations:
+However, in reality, SSG has a major limitation:
+<br>
+Since JS isn't active during the first moments, everything that relies on JS to be presented simply won't be visible, or it will be visible in its incorrect state (like components which rely on the `window.matchMedia` function to be displayed).
 
-- The app is "prerendered", meaning every user has to initially see the **exact** same content, forcing every user-specific features to be loaded later and thus making both _[LCP](https://web.dev/lcp)_ and _[CLS](https://web.dev/cls)_ metrices worse.
-- Since JS isn't active during the first moments, everything that relies on JS to be presented simply won't be visible, or it will be visible in its incorrect state (like components which rely on the _window.matchMedia_ function to be displayed).
-
-These issues are too severe to ignore, they might worsen the UX of most of our pages.
-
-A classic example of these problems is demonstrated by the following website:
+A classic example of this problems is demonstrated by the following website:
 <br>
 https://death-to-ie11.com
 
 Notice how the timer isn't available right away? that's because its generated by JS, which takes time to download and execute.
-<br>
-There are countless other examples of how this delayed functionality severly hurts the UX. There are apps in which not even a single page can be statically generated without causing a layout shift, others only show the navigation bar after JS has been loaded.
 
-We wouldn't want our app to be limited by these, we want to develop highly dynamic apps which don't shift the layout when JS is loaded.
+Another example for this is JS animations - they would first appear static and start animating only when JS is loaded.
+
+There are various examples of how this delayed functionality negatively impacts the user experience, like the way some websites only show the navigation bar after JS has been loaded (since they cannot access the Local Storage to check if it has a user info entry).
 
 ## The Cost of Hydration
 
@@ -957,7 +951,7 @@ Since JS hasn't been loaded yet, Next.js's website could not prevent the default
 <br>
 And the slower the connection is - the more severe this issue becomes.
 <br>
-In other words, where SSR should have had a performance edge over CSR, we see a very "dangerous" behavior that might only degrade the UX.
+In other words, where SSR should have had a performance edge over CSR, we see a very "dangerous" behavior that might degrade the user experience.
 
 It is impossible for this issue to occur in CSR apps, since the moment they render - JS has already been fully loaded.
 
@@ -965,8 +959,8 @@ It is impossible for this issue to occur in CSR apps, since the moment they rend
 
 We saw that client-side rendering performance is on par and sometimes even better than SSR in terms of loading times.
 <br>
-We also learned that using prerendering gives perfect SEO results, and that we don't even need to think about it once it is set up.
+We also learned that prerendering produces perfect SEO results, and that we don't even need to think about it once it is set up.
 <br>
 And above all - we have achieved all this mainly by modifiying 2 files (Webpack config and HTML template) and using a prerender service, so every existing CSR app should be able to quickly and easily implement these modifications and benefit from them.
 
-These facts lead to the conclusion that there is just no reason to use SSR anymore, it would only add a lot of complexity and limitations to our project and degrade the developer experience.
+These facts lead to the conclusion that there is no particular reason to use SSR, it would only add a lot of complexity and limitations to our project and degrade the developer experience.

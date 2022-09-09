@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { persistState, getPersistedState, useFetch } from 'frontend-essentials'
+import { If, Meta, useFetch, persistState, getPersistedState } from 'frontend-essentials'
 import startCase from 'lodash/startCase'
 import toLower from 'lodash/toLower'
-import { css } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import { Skeleton } from '@mui/material'
 
 import pagesManifest from 'pages-manifest.json'
 import { preconnect } from 'utils/preconnect'
-import { setMetaTags } from 'utils/meta-tags'
 import Title from 'components/common/Title'
 import Info from 'components/common/Info'
 
@@ -18,11 +17,12 @@ const PokemonInfo = () => {
   const { name: nameParam } = useParams()
 
   const [pokemonInfo, setPokemonInfo] = useState(getPersistedState(`${nameParam}Info`) || {})
+  const [imageLoading, setImageLoading] = useState(true)
 
   const { id, name, sprites } = pokemonInfo
 
   useFetch(data.url.replace('$', nameParam), {
-    camelCasedKeys: true,
+    camelCasedResponse: true,
     onSuccess: ({ data }) => setPokemonInfo(data)
   })
 
@@ -31,33 +31,40 @@ const PokemonInfo = () => {
   }, [])
 
   useEffect(() => {
-    if (!name) return
-
-    persistState(`${nameParam}Info`, pokemonInfo)
-    setMetaTags({
-      title: `${startCase(toLower(name))} | Pokémon Info`,
-      image: sprites.other.officialArtwork.frontDefault
-    })
+    if (name) persistState(`${nameParam}Info`, pokemonInfo)
   }, [name])
 
   return (
     <div>
+      <Meta
+        title={`${startCase(toLower(name || 'loading'))} | Pokémon Info`}
+        image={sprites?.other.officialArtwork.frontDefault}
+      />
+
       <Title backButton>Pokémon Info</Title>
 
       <Info className={style.info}>{description}</Info>
 
       <main className={style.main}>
         {id ? (
-          <div>
+          <>
             <p>
               {id}. <strong>{startCase(toLower(name))}</strong>
             </p>
 
-            <img className={style.image} src={sprites.other.officialArtwork.frontDefault} />
-          </div>
+            <img
+              className={cx(style.image, { hidden: imageLoading })}
+              src={sprites.other.officialArtwork.frontDefault}
+              onLoad={() => setImageLoading(false)}
+            />
+          </>
         ) : (
-          <Skeleton className={style.skeleton} variant="text" width={100} height={20} animation={false} />
+          <Skeleton className={style.skeleton} variant="text" width={100} height={24} animation={false} />
         )}
+
+        <If condition={imageLoading}>
+          <Skeleton className={cx(style.skeleton, style.image)} variant="rectangular" width={475} height={475} />
+        </If>
       </main>
     </div>
   )

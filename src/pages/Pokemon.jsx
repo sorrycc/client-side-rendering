@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { isDate } from 'moment'
-import { persistState, getPersistedState, useFetch } from 'frontend-essentials'
+import { Meta, useFetch, persistState, getPersistedState } from 'frontend-essentials'
 import startCase from 'lodash/startCase'
 import toLower from 'lodash/toLower'
 import { css } from '@emotion/css'
 import { Skeleton } from '@mui/material'
 
 import pagesManifest from 'pages-manifest.json'
-import { setMetaTags } from 'utils/meta-tags'
 import { DESKTOP_VIEWPORT } from 'styles/constants'
 import Title from 'components/common/Title'
 import Info from 'components/common/Info'
@@ -19,19 +18,23 @@ const Pokemon = () => {
   const [pokemon, setPokemon] = useState(getPersistedState('pokemon') || [])
 
   useFetch(data[0].url, {
-    onSuccess: ({ data: { data } }) => setPokemon(data.pokemons.results.sort((a, b) => a.name.localeCompare(b.name)))
+    onSuccess: ({ data: { results } }) => setPokemon(results.map(({ name }) => name))
   })
 
   useEffect(() => {
     if (pokemon) persistState('pokemon', pokemon)
-
-    setMetaTags({ image: `${window.location.origin}/icons/og-pokemon.png` })
   }, [pokemon])
 
   console.log(isDate(new Date()))
 
   return (
     <div>
+      <Meta
+        title={`${title} | Client-side Rendering`}
+        description={description}
+        image={`${window.location.origin}/icons/og-pokemon.png`}
+      />
+
       <Title>{title}</Title>
 
       <Info className={style.info}>{description}</Info>
@@ -39,10 +42,12 @@ const Pokemon = () => {
       <main className={style.main}>
         {pokemon.length ? (
           <ul className={style.list}>
-            {pokemon.map(({ name }, ind) => (
-              <NavLink className={style.pokemon} key={ind} to={`/pokemon/${name}`}>
-                {startCase(toLower(name))}
-              </NavLink>
+            {pokemon.map(name => (
+              <li key={name}>
+                <NavLink className={style.pokemon} to={`/pokemon/${name}`}>
+                  {startCase(toLower(name))}
+                </NavLink>
+              </li>
             ))}
           </ul>
         ) : (
@@ -84,13 +89,10 @@ const style = {
     background-color: rgba(0, 0, 0, 0.05);
   `,
   pokemon: css`
-    display: block;
+    display: inline-block;
+    margin-top: 10px;
     text-decoration: none;
     color: inherit;
-
-    :not(:first-child) {
-      margin-top: 10px;
-    }
   `
 }
 
